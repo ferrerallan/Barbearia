@@ -1,16 +1,13 @@
 const express = require('express');
-const routes = require('./routes');
+const routes = require('./routes2');
 
-require( './database');
+import './database'
 
 class App{
     constructor(){
         this.server = express();
-
         this.middlewares();
-
         this.routes();
-
     }
 
     middlewares(){
