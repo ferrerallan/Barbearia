@@ -1,5 +1,5 @@
 const express = require('express');
-const routes = require('./routes2');
+const routes = require('./routes');
 
 import './database'
 
