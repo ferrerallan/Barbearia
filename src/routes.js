@@ -1,33 +1,30 @@
-import { Router }  from 'express';
+import { Router } from 'express';
+import multer from 'multer';
+import multerConfig from './config/multer';
+
 import User from './app/models/User';
 
 import UserController from './app/controllers/UserController';
+import SessionController from './app/controllers/SessionController';
+import FileController from './app/controllers/FileController';
+import ProviderController from './app/controllers/ProviderController';
+
+import authMeddleware from './app/middlewares/auth';
 
 const routes = new Router();
+const upload = multer(multerConfig);
 
 
-routes.post('/users',UserController.store);
-
-routes.get('/',async(req,res)=>{
-
-    const user = await User.create({
-        name: 'Allan',
-        email: 'allanfamema22@gmail.com',
-        password_hash:'123'
-    });
-    
-    return res.json(user);
-})
+routes.post('/users', UserController.store);
+routes.post('/sessions', SessionController.store);
 
 
-routes.get('/:nome',async(req,res)=>{
-    const n = req.params.nome;
-    const user = await User.findOne({ 
-        where: {name:n}        
-    });
-    
-    return res.json(user);
-})
+routes.use(authMeddleware);
 
+routes.get('/providers', ProviderController.index);
+
+routes.put('/users', UserController.update);
+
+routes.post('/files', upload.single('file'), FileController.store);
 
 module.exports = routes;
