@@ -22,6 +22,7 @@ module.exports = {
     "function-paren-newline":0,
     "comma-dangle":0,
     "arrow-body-style":0,
+    "camelcase":0,
   },
 }
 
