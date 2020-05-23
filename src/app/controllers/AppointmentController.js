@@ -1,11 +1,14 @@
 import * as Yup from 'yup';
-import { startOfHour, parseISO, isBefore, format } from 'date-fns';
+import {
+  startOfHour, parseISO, isBefore, format, subHours
+} from 'date-fns';
 import pt from 'date-fns/locale/pt';
 
 import Appointment from '../models/Appointment';
 import User from '../models/User';
 import File from '../models/File';
 import Notification from '../schemas/Notification';
+import Mail from '../../lib/Mail';
 
 class AppointmentController {
   async store(req, res) {
@@ -107,6 +110,34 @@ class AppointmentController {
     });
 
     return res.json(appointments);
+  }
+
+  async delete(req, res) {
+    const appointment = await Appointment.findByPk(req.params.id);
+    if (appointment.user_id !== req.userId) {
+      return res.status(401).json({
+        error: 'Sem permissao de acesso pra cancelar agendamento de outro usuario'
+      });
+    }
+
+    const dateWithSub = subHours(appointment.date, 2);
+
+    if (!isBefore(dateWithSub, new Date())) {
+      return res.status(401).json({
+        error: `ja passou do horario maximo de cancelamento(2 horas)${dateWithSub}`
+      });
+    }
+
+    appointment.canceled_at = new Date();
+    await appointment.save();
+
+    await Mail.sendMail({
+      to: '\'Allan\' \'<ferrerallan@gmail.com>\'',
+      subject: 'Agendamento cancelado',
+      text: 'voce tem um novo cancelamento',
+    });
+
+    return res.json(appointment);
   }
 }
 
